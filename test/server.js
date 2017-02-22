@@ -1,4 +1,4 @@
-var injector = require('../injector').getContainer();
+var injector = require('../injectdeps').getContainer();
 
 injector
   .bindName('db').toObject(require('./db'))

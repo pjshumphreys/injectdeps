@@ -1,0 +1,26 @@
+{
+  "name": "injectdeps",
+  "version": "1.0.0",
+  "description": "A lightweight, Angular.js like dependency injection system for node.js",
+  "main": "injectdeps.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pjshumphreys/injectdeps.git"
+  },
+  "keywords": [
+    "dependency",
+    "injection"
+  ],
+  "author": "Paul Humphreys",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pjshumphreys/injectdeps/issues"
+  },
+  "homepage": "https://github.com/pjshumphreys/injectdeps#readme"
+}

@@ -1,4 +1,4 @@
-var injector = require('../injector');
+var injector = require('../injectdeps');
 
 module.exports = injector(['db', 'logger:promise'], function(db, logger) {
 

@@ -1,4 +1,4 @@
-module.exports = require('../injector')(['logger', 'text'], function(logger, text) {
+module.exports = require('../injectdeps')(['logger', 'text'], function(logger, text) {
   this.hello = text;
   this.foo = logger.foo;
 
