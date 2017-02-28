@@ -35,34 +35,58 @@ function Container() {
   return this;
 }
 
-Container.prototype.bindName = function(name) {
-  return {
-    toObject: returnedVal => {
-      if(!(returnedVal instanceof InnerConstructor)) {
-        throw new Error('Tried to bind a name to something not created by injector');
-      }
+const BINDING_SCOPES = {
+  TRANSIENT: 'TRANSIENT',
+  SINGLETON: 'SINGLETON'
+};
 
-      this.available[name] = returnedVal;
-      
-      return this;
-    },
-    toScalarValue: val => {
-      switch(typeof val) {
-        case 'string':
-        case 'number':
-        case 'boolean': {
-          this.available[name] = new InnerConstructor([], () => val);
-        } break;
+function Bindable(name, container){
+  this.name = name;
+  this.container = container;
+  this.scope = BINDING_SCOPES.TRANSIENT;
 
-        default: {
-          throw new Error('Tried to bind a name to a non scalar value');
-        } break;
-      }
-      
-      return this;
+  this.toObject = returnedVal => {
+    if(!(returnedVal instanceof InnerConstructor)) {
+      throw new Error('Tried to bind a name to something not created by injector');
     }
+
+    this.container.available[this.name] = returnedVal;
+
+    return this.container;
+  };
+
+  this.toScalarValue = val => {
+    switch(typeof val) {
+      case 'string':
+      case 'number':
+      case 'boolean': {
+        this.container.available[name] = new InnerConstructor([], () => val);
+      } break;
+
+      default: {
+        throw new Error('Tried to bind a name to a non scalar value');
+      } break;
+    }
+
+    return this.container;
+  };
+
+  this.toConstant = val => {
+    this.container.available[name] = new InnerConstructor([], () => val);
+    return this.container;
   }
+
+  this.inSingletonScope = () => {
+    this.scope = BINDING_SCOPES.SINGLETON
+    return this;
+  };
+
+  return this;
 }
+
+Container.prototype.bindName = function(name) {
+  return new Bindable(name, this);
+};
 
 Container.prototype.getObject = function(name) {
   //check the type of the input parameter
