@@ -31,19 +31,29 @@ function InnerConstructor(deps, constructor) {
 
 function Container() {
   this.available = {};
-  
+
   return this;
 }
 
 Container.prototype.bindName = function(name) {
   return {
+    toPlainObject: val => {
+      this.available[name] = new InnerConstructor([], () => val);
+
+      return this;
+    },
+    toContainer: () => {
+      this.available[name] = this;
+
+      return this;
+    },
     toObject: returnedVal => {
       if(!(returnedVal instanceof InnerConstructor)) {
         throw new Error('Tried to bind a name to something not created by injector');
       }
 
       this.available[name] = returnedVal;
-      
+
       return this;
     },
     toScalarValue: val => {
@@ -51,14 +61,14 @@ Container.prototype.bindName = function(name) {
         case 'string':
         case 'number':
         case 'boolean': {
-          this.available[name] = new InnerConstructor([], () => val);
+          this.available[name] = new InnerConstructor([], () => ''+val);
         } break;
 
         default: {
           throw new Error('Tried to bind a name to a non scalar value');
         } break;
       }
-      
+
       return this;
     }
   }
@@ -69,7 +79,7 @@ Container.prototype.getObject = function(name) {
   if(typeof name !== 'string') {
       throw new Error('didn\'t specify a bound object name as a string');
   }
-  
+
   //manage circular depenancies
   var circleBreaker = {};
 
@@ -160,11 +170,21 @@ function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promise
   deps = self.available[name].deps;
 
   for(i = 0, len = deps.length; i < len; i++) {
-    resolvedDeps.push(
-      satisfiedDeps.hasOwnProperty(deps[i]) ?
-      satisfiedDeps[deps[i]] :
-      innerGet(self, deps[i], circleBreaker, circleChain, satisfiedDeps, promisesForName)
-    );
+    //handle if the specified dependancy is the injector itself
+    if(self.available[deps[i]] === self) {
+      resolvedDeps.push({
+        getObject: (name) =>
+          innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promisesForName)
+      });
+    }
+    //otherwise, do normal behaviour
+    else {
+      resolvedDeps.push(
+        satisfiedDeps.hasOwnProperty(deps[i]) ?
+        satisfiedDeps[deps[i]] :
+        innerGet(self, deps[i], circleBreaker, circleChain, satisfiedDeps, promisesForName)
+      );
+    }
   }
 
   obj = self.available[name].constructor.apply({}, resolvedDeps);
