@@ -74,7 +74,7 @@ Container.prototype.bindName = function(name) {
   }
 }
 
-Container.prototype.getObject = function(name) {
+Container.prototype.newObject = function(name) {
   //check the type of the input parameter
   if(typeof name !== 'string') {
       throw new Error('didn\'t specify a bound object name as a string');
@@ -173,8 +173,13 @@ function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promise
     //handle if the specified dependancy is the injector itself
     if(self.available[deps[i]] === self) {
       resolvedDeps.push({
-        getObject: (name) =>
-          innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promisesForName)
+        getObject: (innerName) => {
+          if(!satisfiedDeps.hasOwnProperty(innerName)) {
+            satisfiedDeps[innerName] = innerGet(self, innerName, circleBreaker, circleChain, satisfiedDeps, promisesForName);
+          }
+
+          return satisfiedDeps[innerName];
+        }
       });
     }
     //otherwise, do normal behaviour
