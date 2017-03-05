@@ -139,6 +139,25 @@ Container.prototype.newObject = function(name) {
 
 var regex = /:promise$/;
 
+function wrapInnerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promisesForName) {
+  try {
+    return innerGet.apply(self, arguments);
+  }
+  catch(err) {
+    switch(err.message) {
+      case 'circle': {
+        throw new Error('A circular set of dependancies was formed: '+circleChain.join('->')+ '->'+ err.depName);
+      } break;
+
+      case 'notfound': {
+        throw new Error('A depandancy named "'+ err.depName + '" was used without being bound from (' + circleChain.join('->') + ')')
+      } break;
+    }
+
+    throw err;
+  }
+}
+
 function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promisesForName) {
   var deps;
   var resolvedDeps = [];
@@ -189,7 +208,7 @@ function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promise
       resolvedDeps.push({
         getObject: (innerName) => {
           if(!satisfiedDeps.hasOwnProperty(innerName)) {
-            satisfiedDeps[innerName] = innerGet(self, innerName, circleBreaker, circleChain, satisfiedDeps, promisesForName);
+            satisfiedDeps[innerName] = wrapInnerGet(self, innerName, circleBreaker, circleChain, satisfiedDeps, promisesForName);
           }
 
           return satisfiedDeps[innerName];
