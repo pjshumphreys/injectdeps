@@ -35,6 +35,16 @@ function Container() {
   return this;
 }
 
+Container.prototype.loadPlugin = function(plugin) {
+  if(typeof plugin !== 'function') {
+    throw new Error("Was passed a plugin that isn't a function");
+  }
+
+  plugin(this);
+
+  return this;
+}
+
 Container.prototype.bindName = function(name) {
   return {
     toPlainObject: val => {
@@ -115,11 +125,11 @@ Container.prototype.newObject = function(name) {
   catch(err) {
     switch(err.message) {
       case 'circle': {
-        throw new Error('A circular set of dependancies was formed: '+circleChain.join('->'));
+        throw new Error('A circular set of dependancies was formed: '+circleChain.join('->')+ '->'+ err.depName);
       } break;
 
       case 'notfound': {
-        throw new Error('A depandancy name was used without being bound from (' + circleChain.join('->') + ')')
+        throw new Error('A depandancy named "'+ err.depName + '" was used without being bound from (' + circleChain.join('->') + ')')
       } break;
     }
 
@@ -132,7 +142,7 @@ var regex = /:promise$/;
 function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promisesForName) {
   var deps;
   var resolvedDeps = [];
-  var i, len, obj;
+  var i, len, obj, err;
   var returnPromise = false;
 
   if(regex.test(name)) {
@@ -141,7 +151,9 @@ function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promise
   }
 
   if(!self.available.hasOwnProperty(name)) {
-    throw new Error('notfound');
+    err = new Error('notfound');
+    err.depName = name;
+    throw err;
   }
 
   if(returnPromise) {
@@ -160,7 +172,9 @@ function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promise
   }
 
   if(circleBreaker.hasOwnProperty(name)) {
-    throw new Error('circle');
+    err = new Error('circle');
+    err.depName = name;
+    throw err;
   }
 
   circleBreaker[name] = true;
