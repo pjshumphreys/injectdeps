@@ -206,6 +206,9 @@ function innerGet(self, name, circleBreaker, circleChain, satisfiedDeps, promise
     //handle if the specified dependancy is the injector itself
     if(self.available[deps[i]] === self) {
       resolvedDeps.push({
+        hasObject: (innerName) => {
+          return self.available.hasOwnProperty(innerName);
+        },
         getObject: (innerName) => {
           if(!satisfiedDeps.hasOwnProperty(innerName)) {
             satisfiedDeps[innerName] = wrapInnerGet(self, innerName, circleBreaker, circleChain, satisfiedDeps, promisesForName);
