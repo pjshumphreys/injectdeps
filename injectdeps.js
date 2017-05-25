@@ -71,7 +71,7 @@ Container.prototype.bindName = function(name) {
         case 'string':
         case 'number':
         case 'boolean': {
-          this.available[name] = new InnerConstructor([], () => ''+val);
+          this.available[name] = new InnerConstructor([], () => val);
         } break;
 
         default: {
