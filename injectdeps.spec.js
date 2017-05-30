@@ -1,6 +1,22 @@
 const expect = require('chai').expect;
 
 describe('injectdeps', () => {
+  it('should inject scalar values', () => {
+    const container = require('../injectdeps').getContainer()
+      .bindName('text').toScalarValue('abc')
+      .bindName('num').toScalarValue(123.45)
+      .bindName('bol').toScalarValue(true);
+
+    expect(container.newObject('text')).to.be.a('string')
+      .that.equals('abc');
+
+    expect(container.newObject('num')).to.be.a('number')
+      .that.equals(123.45);
+
+    expect(container.newObject('bol')).to.be.a('boolean')
+      .that.equals(true);
+  });
+
   it('should inject basic properties', () => {
     const app = require('../injectdeps').getContainer()
       .bindName('db').toObject(require('./test/db'))
