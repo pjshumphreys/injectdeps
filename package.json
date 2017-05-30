@@ -1,6 +1,6 @@
 {
   "name": "injectdeps",
-  "version": "1.5.3",
+  "version": "1.5.5",
   "description": "A lightweight, Angular.js like dependency injection system for node.js",
   "main": "injectdeps.js",
   "directories": {
