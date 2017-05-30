@@ -66,12 +66,25 @@ Container.prototype.bindName = function(name) {
 
       return this;
     },
+    toStringValue: val => {
+      let err, str;
+      try {
+        str = JSON.stringify(val);
+      }
+      catch(err) {
+        throw new Error('Tried to bind a name to a value that could not be stringified');
+      }
+
+      this.available[name] = new InnerConstructor([], () => str);
+
+      return this;
+    },
     toScalarValue: val => {
       switch(typeof val) {
         case 'string':
         case 'number':
         case 'boolean': {
-          this.available[name] = new InnerConstructor([], () => ''+val);
+          this.available[name] = new InnerConstructor([], () => val);
         } break;
 
         default: {
